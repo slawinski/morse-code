@@ -1,112 +1,92 @@
-# Morse Code Implementations
+# Morse Code Decoder Implementations
 
-This folder contains different implementations of Morse code encoding and decoding, each demonstrating a different approach to the problem.
+This directory contains multiple implementations of a Morse code decoder, each demonstrating different approaches and techniques.
 
-## Implementation Overview
+## Implementations
 
-### morse1.ts
+### 1. `morse1.ts` - Simple Map-based Implementation
 
-Simple map-based implementation using a direct mapping between characters and their Morse code representations.
+- Uses a simple map to decode Morse code
+- Most straightforward implementation
+- Good for understanding the basic concept
 
-### morse2.ts
+### 2. `morse2.ts` - Recursive Implementation
 
-Alternative implementation using a map-based approach with improved structure.
+- Uses recursion to build the decoded text
+- Demonstrates functional programming concepts
+- More elegant but potentially harder to understand
 
-### morse3.ts
+### 3. `morse3.ts` - Iterative Implementation
 
-Implementation using nested if-else statements for decoding. This approach is less maintainable due to its complex nested structure.
+- Uses iteration instead of recursion
+- More memory efficient
+- Easier to debug and understand
 
-### morse4.ts
+### 4. `morse4.ts` - State Machine Implementation
 
-Tree-based state machine implementation that provides the best balance of readability, maintainability, and efficiency.
+- Uses a simple state machine pattern
+- More structured approach
+- Better for handling complex state transitions
 
-## State Machine Visualization (morse4.ts)
+### 5. `morse5.ts` - XState Implementation
 
-The state machine in morse4.ts is implemented as a tree structure:
+- Uses the XState library for state management
+- Most robust and maintainable implementation
+- Properly handles state transitions and cleanup
+- Well-organized with separate concerns:
+  - State definitions
+  - Action definitions
+  - Machine creation
+  - Text conversion logic
 
-```mermaid
-flowchart TD
-    Root((Root)) --> Dash
-    Root --> Dot
-    Root --> Space
+## Testing
 
-    Dash --> DashDash
-    Dash --> DashDot
-    Dash --> T
+All implementations can be tested using the `morse.test.ts` file. The test file includes:
 
-    Dot --> DotDot
-    Dot --> DotDash
-    Dot --> E
-
-    DashDash --> DashDashDash
-    DashDash --> DashDashDot
-
-    DashDot --> DashDotDot
-    DashDot --> DashDotDash
-
-    DotDot --> DotDotDot
-    DotDot --> DotDotDash
-    DotDot --> I
-
-    DotDash --> DotDashDot
-    DotDash --> DotDashDash
-    DotDash --> A
-
-    DashDashDash --> O
-    DashDashDot --> G
-    DashDotDot --> D
-    DashDotDash --> K
-    DotDotDot --> S
-    DotDashDot --> R
-    DotDashDash --> W
-    Space --> SPACE
-
-    classDef default fill:#f9f,stroke:#333,stroke-width:2px;
-    classDef leaf fill:#9f9,stroke:#333,stroke-width:2px;
-    class T,E,I,A,O,G,D,K,S,R,W,SPACE leaf;
+```bash
+npm test
 ```
 
-### How the State Machine Works
+## Implementation Details
 
-1. The tree structure represents all possible Morse code patterns:
+### XState Implementation (morse5.ts)
 
-   - Root node (empty string) branches to dash, dot, and space
-   - Each node can have multiple children
-   - Edges are labeled with "." (dot), "-" (dash), or "/" (space)
-   - Leaf nodes contain the decoded character
+The XState implementation is the most sophisticated and includes:
 
-2. Decoding process:
+1. **Type Definitions**:
 
-   - Start at root node
-   - Follow path of dots and dashes
-   - Leaf node reached contains the decoded character
+   - `MorseContext`: Defines the machine's context (result string)
+   - `MorseEvent`: Defines possible events (DOT, DASH, SPACE, END)
 
-3. Example paths:
-   - "." → E
-   - "-" → T
-   - ".-" → A
-   - "..." → S
-   - "---" → O
+2. **State Machine Components**:
 
-## Usage Example
+   - `createMorseStates()`: Defines all possible states and transitions
+   - `createMorseActions()`: Defines actions for adding letters to the result
+   - `createMorseMachine()`: Creates a fresh machine instance
+
+3. **Main Function**:
+   - `morseToText()`: Converts Morse code to text using the state machine
+   - Handles word separation and character processing
+   - Properly cleans up resources after use
+
+## Usage
 
 ```typescript
-import { textToMorse, morseToText } from "./morse4";
+import { morseToText } from "./morse5";
 
-// Encode text to Morse code
-const morse = textToMorse("HELLO WORLD");
-console.log(morse); // ".... . .-.. .-.. --- / .-- --- .-. .-.. -.."
+// Decode a single letter
+console.log(morseToText(".-")); // 'A'
 
-// Decode Morse code to text
-const text = morseToText(".... . .-.. .-.. --- / .-- --- .-. .-.. -..");
-console.log(text); // "HELLO WORLD"
+// Decode a word
+console.log(morseToText(".... . .-.. .-.. ---")); // 'HELLO'
+
+// Decode multiple words
+console.log(morseToText(".... . .-.. .-.. ---   .-- --- .-. .-.. -..")); // 'HELLO WORLD'
 ```
 
-## Implementation Comparison
+## Notes
 
-| Implementation | Approach       | Pros                                   | Cons                                |
-| -------------- | -------------- | -------------------------------------- | ----------------------------------- |
-| morse1.ts      | Simple map     | Easy to understand, direct mapping     | Less flexible, no pattern matching  |
-| morse2.ts      | Map-based      | Better structure, more maintainable    | Still lacks pattern matching        |
-| morse3.ts      | Nested if-else | Works correctly                        | Hard to maintain, complex nesting   |
-| morse4.ts      | State machine  | Most readable, maintainable, efficient | Slightly more complex initial setup |
+- The XState implementation (morse5.ts) is the recommended version for production use
+- Each implementation has its own strengths and use cases
+- All implementations pass the same test suite
+- The state machine approach (morse4.ts and morse5.ts) is best for handling complex state transitions
