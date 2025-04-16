@@ -3,6 +3,7 @@
     import { morseToText } from '$lib/morse5';
     import { fade } from 'svelte/transition';
     import { cubicOut } from 'svelte/easing';
+    import { onMount } from 'svelte';
 
     let textInput = '';
     let morseInput = '';
@@ -10,24 +11,103 @@
     let isPlaying = false;
     let waveformData: number[] = [];
     let waveformInterval: number | undefined;
+    
+    // Animation states
+    let isConvertingText = false;
+    let isConvertingMorse = false;
+    let animatedMorseInput = '';
+    let animatedTextInput = '';
+    let conversionTimeout: number | undefined;
 
+    // Debounce function to prevent too many rapid conversions
+    function debounce(func: Function, wait: number) {
+        let timeout: number | undefined;
+        return function executedFunction(...args: any[]) {
+            const later = () => {
+                clearTimeout(timeout);
+                func(...args);
+            };
+            clearTimeout(timeout);
+            timeout = setTimeout(later, wait);
+        };
+    }
+
+    // Animated text to morse conversion
     function handleTextInput() {
+        if (conversionTimeout) clearTimeout(conversionTimeout);
+        
         try {
-            morseInput = textToMorse(textInput);
+            // Start the animation immediately
+            isConvertingText = true;
+            animatedMorseInput = '';
+            
+            // Get the full morse code result
+            const fullMorseCode = textToMorse(textInput);
+            
+            // Animate each character
+            let currentIndex = 0;
+            const animateNextChar = () => {
+                if (currentIndex < fullMorseCode.length) {
+                    animatedMorseInput += fullMorseCode[currentIndex];
+                    currentIndex++;
+                    conversionTimeout = setTimeout(animateNextChar, 100);
+                } else {
+                    isConvertingText = false;
+                    morseInput = fullMorseCode; // Update the actual input after animation
+                }
+            };
+            
+            animateNextChar();
             error = '';
         } catch (e) {
             error = 'Invalid input';
+            isConvertingText = false;
         }
     }
 
+    // Animated morse to text conversion
     function handleMorseInput() {
+        if (conversionTimeout) clearTimeout(conversionTimeout);
+        
         try {
-            textInput = morseToText(morseInput);
+            // Start the animation
+            isConvertingMorse = true;
+            animatedTextInput = '';
+            
+            // Get the full text result
+            const fullText = morseToText(morseInput);
+            
+            // Animate each character
+            let currentIndex = 0;
+            const animateNextChar = () => {
+                if (currentIndex < fullText.length) {
+                    animatedTextInput += fullText[currentIndex];
+                    currentIndex++;
+                    conversionTimeout = setTimeout(animateNextChar, 100);
+                } else {
+                    isConvertingMorse = false;
+                    textInput = fullText; // Update the actual input after animation
+                }
+            };
+            
+            animateNextChar();
             error = '';
         } catch (e) {
             error = 'Invalid morse code';
+            isConvertingMorse = false;
         }
     }
+
+    // Debounced handlers to prevent too many rapid conversions
+    const debouncedTextInput = debounce(handleTextInput, 300);
+    const debouncedMorseInput = debounce(handleMorseInput, 300);
+
+    // Clean up timeouts on component destruction
+    onMount(() => {
+        return () => {
+            if (conversionTimeout) clearTimeout(conversionTimeout);
+        };
+    });
 
     function generateWaveformData(): number[] {
         // Generate random heights for the waveform bars
@@ -45,6 +125,9 @@
         waveformInterval = setInterval(() => {
             waveformData = generateWaveformData();
         }, 100);
+
+        // Add a delay before starting audio playback to allow the flip transition to complete
+        await new Promise(resolve => setTimeout(resolve, 400)); // 600ms delay to match the flip transition duration
 
         const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
         const oscillator = audioContext.createOscillator();
@@ -114,13 +197,19 @@
                 <div class="flip-container" class:flipped={isPlaying}>
                     <div class="flipper">
                         <div class="front">
-                            <input
-                                type="text"
-                                id="morse"
-                                bind:value={morseInput}
-                                on:input={handleMorseInput}
-                                placeholder="Enter morse code to convert to text"
-                            />
+                            {#if isConvertingText}
+                                <div class="animated-input">
+                                    <span class="animated-text">{animatedMorseInput}<span class="cursor">|</span></span>
+                                </div>
+                            {:else}
+                                <input
+                                    type="text"
+                                    id="morse"
+                                    bind:value={morseInput}
+                                    on:input={debouncedMorseInput}
+                                    placeholder="Enter morse code to convert to text"
+                                />
+                            {/if}
                             <button class="play-button" on:click={playMorseSound} title="Play Morse code">
                                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                     <path d="M8 5L19 12L8 19V5Z" fill="currentColor" stroke="currentColor" stroke-width="2"/>
@@ -144,13 +233,19 @@
         <div class="input-group">
             <label for="text">Text</label>
             <div class="input-with-button">
-                <input
-                    type="text"
-                    id="text"
-                    bind:value={textInput}
-                    on:input={handleTextInput}
-                    placeholder="Enter text to convert to morse code"
-                />
+                {#if isConvertingMorse}
+                    <div class="animated-input">
+                        <span class="animated-text">{animatedTextInput}<span class="cursor">|</span></span>
+                    </div>
+                {:else}
+                    <input
+                        type="text"
+                        id="text"
+                        bind:value={textInput}
+                        on:input={debouncedTextInput}
+                        placeholder="Enter text to convert to morse code"
+                    />
+                {/if}
             </div>
         </div>
 
@@ -471,5 +566,35 @@
             transform: rotateX(0deg);
             opacity: 1;
         }
+    }
+
+    .animated-input {
+        width: 100%;
+        height: 100%;
+        padding: 1rem;
+        background: #ffffff;
+        color: #000000;
+        box-shadow: 4px 4px 0 #000000;
+        box-sizing: border-box;
+        display: flex;
+        align-items: center;
+        font-family: 'Courier New', monospace;
+        font-size: 1rem;
+        font-weight: bold;
+        overflow: hidden;
+    }
+    
+    .animated-text {
+        white-space: pre-wrap;
+        word-break: break-all;
+    }
+    
+    .cursor {
+        animation: blink 1s step-end infinite;
+    }
+    
+    @keyframes blink {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0; }
     }
 </style>
