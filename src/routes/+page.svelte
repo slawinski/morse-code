@@ -6,6 +6,8 @@
     let morseInput = '';
     let error = '';
     let isPlaying = false;
+    let waveformData = [];
+    let waveformInterval;
 
     function handleTextInput() {
         try {
@@ -25,9 +27,22 @@
         }
     }
 
+    function generateWaveformData() {
+        // Generate random heights for the waveform bars
+        return Array.from({ length: 20 }, () => Math.random() * 40 + 10);
+    }
+
     async function playMorseSound() {
         if (isPlaying) return;
         isPlaying = true;
+        
+        // Initialize waveform data
+        waveformData = generateWaveformData();
+        
+        // Start the waveform animation
+        waveformInterval = setInterval(() => {
+            waveformData = generateWaveformData();
+        }, 100);
 
         const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
         const oscillator = audioContext.createOscillator();
@@ -76,6 +91,8 @@
         
         setTimeout(() => {
             isPlaying = false;
+            clearInterval(waveformInterval);
+            waveformData = [];
         }, (currentTime - audioContext.currentTime) * 1000);
     }
 </script>
@@ -123,6 +140,16 @@
         {#if error}
             <p class="error">{error}</p>
         {/if}
+        
+        {#if isPlaying}
+            <div class="waveform-container">
+                <div class="waveform">
+                    {#each waveformData as height, i}
+                        <div class="waveform-bar" style="height: {height}px;"></div>
+                    {/each}
+                </div>
+            </div>
+        {/if}
     </div>
 
     <div class="info">
@@ -133,7 +160,7 @@
             <li>Use dots (.) and dashes (-) for Morse code</li>
             <li>Use spaces between letters</li>
             <li>Use forward slash (/) for word spaces</li>
-            <li>Click the play button to hear the Morse code</li>
+            <li>Click the play button 🔊 to hear the Morse code</li>
         </ul>
     </div>
 </main>
@@ -303,6 +330,28 @@
         font-weight: bold;
         text-transform: uppercase;
         letter-spacing: 1px;
+    }
+
+    .waveform-container {
+        margin-top: 2rem;
+        padding: 1rem;
+        background: #000000;
+        border: 2px solid #000000;
+        box-shadow: 4px 4px 0 #ff3e00;
+    }
+
+    .waveform {
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        height: 60px;
+    }
+
+    .waveform-bar {
+        width: 8px;
+        background: #ffffff;
+        margin: 0 2px;
+        transition: height 0.1s ease;
     }
 
     .info {
