@@ -81,7 +81,9 @@
 </script>
 
 <main class="container">
-    <h1>Morse Code Decoder</h1>
+    <div class="header-board">
+        <h1>Morse Code Decoder</h1>
+    </div>
     
     <div class="converter">
         <div class="input-group">
@@ -94,19 +96,25 @@
                 on:input={handleMorseInput}
                 placeholder="Enter morse code to convert to text"
                 />
-                <button class="play-button" on:click={playMorseSound} title="Play Morse code">▶️</button>
+                <button class="play-button" on:click={playMorseSound} title="Play Morse code">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M8 5L19 12L8 19V5Z" fill="currentColor" stroke="currentColor" stroke-width="2"/>
+                    </svg>
+                </button>
             </div>
         </div>
         
         <div class="input-group">
             <label for="text">Text</label>
-            <input
-                type="text"
-                id="text"
-                bind:value={textInput}
-                on:input={handleTextInput}
-                placeholder="Enter text to convert to morse code"
-            />
+            <div class="input-with-button">
+                <input
+                    type="text"
+                    id="text"
+                    bind:value={textInput}
+                    on:input={handleTextInput}
+                    placeholder="Enter text to convert to morse code"
+                />
+            </div>
         </div>
 
         {#if error}
@@ -122,7 +130,7 @@
             <li>Use dots (.) and dashes (-) for Morse code</li>
             <li>Use spaces between letters</li>
             <li>Use forward slash (/) for word spaces</li>
-            <li>Click the play button 🔊 to hear the Morse code</li>
+            <li>Click the play button to hear the Morse code</li>
         </ul>
     </div>
 </main>
@@ -132,31 +140,88 @@
         max-width: 800px;
         margin: 0 auto;
         padding: 2rem;
-        font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        font-family: 'Courier New', monospace;
+        background: #ffffff;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .container::before {
+        content: '';
+        position: absolute;
+        top: -100px;
+        right: -100px;
+        width: 300px;
+        height: 300px;
+        background: #ff3e00;
+        transform: rotate(45deg);
+        z-index: -1;
+    }
+
+    .container::after {
+        content: '';
+        position: absolute;
+        bottom: -150px;
+        left: -150px;
+        width: 400px;
+        height: 400px;
+        background: #000000;
+        transform: rotate(-15deg);
+        z-index: -1;
+    }
+
+    .header-board {
+        position: relative;
+        display: block;
+        margin: 0 auto 2rem auto;
+        padding: 1rem;
+        background: #ffff00;
+        border: 4px solid #000000;
+        transform: rotate(-2deg);
+        transform-origin: center;
+        width: fit-content;
     }
 
     h1 {
         text-align: center;
-        color: #333;
-        margin-bottom: 2rem;
+        color: #000000;
+        margin: 0;
+        font-size: 2.5rem;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        padding-bottom: 0.5rem;
     }
 
     .converter {
-        background: #f5f5f5;
+        background: #ffffff;
         padding: 2rem;
-        border-radius: 8px;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        position: relative;
+        border: 4px solid #000000;
+    }
+
+    .converter::before {
+        content: '';
+        position: absolute;
+        top: 8px;
+        left: 8px;
+        right: -8px;
+        bottom: -8px;
+        background: #ff3e00;
+        z-index: -1;
     }
 
     .input-group {
-        margin-bottom: 1.5rem;
+        margin-bottom: 2rem;
     }
 
     label {
         display: block;
         margin-bottom: 0.5rem;
-        color: #666;
-        font-weight: 500;
+        color: #000000;
+        font-weight: bold;
+        text-transform: uppercase;
+        font-size: 0.9rem;
+        letter-spacing: 1px;
     }
 
     .input-with-button {
@@ -167,51 +232,92 @@
 
     input {
         width: 100%;
-        padding: 0.75rem;
-        border: 1px solid #ddd;
-        border-radius: 4px;
+        padding: 1rem;
+        border: none;
+        font-family: 'Courier New', monospace;
         font-size: 1rem;
+        font-weight: bold;
+        background: #ffffff;
+        color: #000000;
+        box-shadow: 4px 4px 0 #000000;
     }
 
     input:focus {
         outline: none;
-        border-color: #4a90e2;
-        box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.2);
+        background: #000000;
+        color: #ffffff;
+        box-shadow: 4px 4px 0 #ff3e00;
     }
 
     .play-button {
         position: absolute;
         right: 0.75rem;
-        background: none;
+        background: #ff3e00;
+        color: #ffffff;
         border: none;
         cursor: pointer;
-        font-size: 1.2rem;
-        padding: 0.5rem;
-        border-radius: 50%;
-        transition: transform 0.2s ease;
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0;
+        transition: all 0.2s ease;
+        box-shadow: 4px 4px 0 #000000;
     }
 
     .play-button:hover {
-        transform: scale(1.1);
+        background: #ff3e00;
+        color: #ffffff;
+        transform: translate(2px, 2px);
+        box-shadow: 2px 2px 0 #000000;
+    }
+
+    .play-button:active {
+        transform: translate(4px, 4px);
+        box-shadow: none;
+    }
+
+    .play-button svg {
+        width: 24px;
+        height: 24px;
     }
 
     .error {
-        color: #dc3545;
+        color: #ff0000;
         margin-top: 1rem;
         text-align: center;
+        font-weight: bold;
+        text-transform: uppercase;
+        letter-spacing: 1px;
     }
 
     .info {
         margin-top: 2rem;
         padding: 1.5rem;
-        background: #fff;
-        border-radius: 8px;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        background: #ffffff;
+        position: relative;
+        border: 4px solid #000000;
+    }
+
+    .info::before {
+        content: '';
+        position: absolute;
+        top: 8px;
+        left: 8px;
+        right: -8px;
+        bottom: -8px;
+        background: #ff3e00;
+        z-index: -1;
     }
 
     .info h2 {
-        color: #333;
+        color: #000000;
         margin-bottom: 1rem;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        border-bottom: 2px solid #000000;
+        padding-bottom: 0.5rem;
     }
 
     .info ul {
@@ -220,13 +326,24 @@
     }
 
     .info li {
-        margin-bottom: 0.5rem;
-        color: #666;
+        margin-bottom: 0.75rem;
+        color: #000000;
+        padding-left: 1.5rem;
+        position: relative;
+        font-size: 0.9rem;
     }
 
     .info li:before {
-        content: "•";
-        color: #4a90e2;
-        margin-right: 0.5rem;
+        content: ">";
+        color: #000000;
+        position: absolute;
+        left: 0;
+        font-weight: bold;
+    }
+
+    /* Add some global styles */
+    :global(body) {
+        margin: 0;
+        background: #ffffff;
     }
 </style>
