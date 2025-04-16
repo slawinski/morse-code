@@ -1,13 +1,15 @@
 <script lang="ts">
     import { textToMorse } from '$lib/morse1';
     import { morseToText } from '$lib/morse5';
+    import { fade } from 'svelte/transition';
+    import { cubicOut } from 'svelte/easing';
 
     let textInput = '';
     let morseInput = '';
     let error = '';
     let isPlaying = false;
-    let waveformData = [];
-    let waveformInterval;
+    let waveformData: number[] = [];
+    let waveformInterval: number | undefined;
 
     function handleTextInput() {
         try {
@@ -27,7 +29,7 @@
         }
     }
 
-    function generateWaveformData() {
+    function generateWaveformData(): number[] {
         // Generate random heights for the waveform bars
         return Array.from({ length: 20 }, () => Math.random() * 40 + 10);
     }
@@ -91,7 +93,7 @@
         
         setTimeout(() => {
             isPlaying = false;
-            clearInterval(waveformInterval);
+            if (waveformInterval) clearInterval(waveformInterval);
             waveformData = [];
         }, (currentTime - audioContext.currentTime) * 1000);
     }
@@ -109,18 +111,33 @@
         <div class="input-group">
             <label for="morse">Morse Code</label>
             <div class="input-with-button">
-                <input
-                type="text"
-                id="morse"
-                bind:value={morseInput}
-                on:input={handleMorseInput}
-                placeholder="Enter morse code to convert to text"
-                />
-                <button class="play-button" on:click={playMorseSound} title="Play Morse code">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M8 5L19 12L8 19V5Z" fill="currentColor" stroke="currentColor" stroke-width="2"/>
-                    </svg>
-                </button>
+                <div class="flip-container" class:flipped={isPlaying}>
+                    <div class="flipper">
+                        <div class="front">
+                            <input
+                                type="text"
+                                id="morse"
+                                bind:value={morseInput}
+                                on:input={handleMorseInput}
+                                placeholder="Enter morse code to convert to text"
+                            />
+                            <button class="play-button" on:click={playMorseSound} title="Play Morse code">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M8 5L19 12L8 19V5Z" fill="currentColor" stroke="currentColor" stroke-width="2"/>
+                                </svg>
+                            </button>
+                        </div>
+                        <div class="back">
+                            <div class="waveform-container">
+                                <div class="waveform">
+                                    {#each waveformData as height, i}
+                                        <div class="waveform-bar" style="height: {height}px;"></div>
+                                    {/each}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
         
@@ -139,16 +156,6 @@
 
         {#if error}
             <p class="error">{error}</p>
-        {/if}
-        
-        {#if isPlaying}
-            <div class="waveform-container">
-                <div class="waveform">
-                    {#each waveformData as height, i}
-                        <div class="waveform-bar" style="height: {height}px;"></div>
-                    {/each}
-                </div>
-            </div>
         {/if}
     </div>
 
@@ -268,6 +275,42 @@
         position: relative;
         display: flex;
         align-items: center;
+        height: 3.5rem; /* Fixed height for the container */
+    }
+    
+    .flip-container {
+        width: 100%;
+        height: 100%;
+        perspective: 1000px;
+    }
+    
+    .flipper {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        transition: transform 0.6s;
+        transform-style: preserve-3d;
+    }
+    
+    .flipped .flipper {
+        transform: rotateX(180deg);
+    }
+    
+    .front, .back {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        backface-visibility: hidden;
+    }
+    
+    .back {
+        transform: rotateX(180deg);
+    }
+    
+    .front {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
     }
 
     input {
@@ -280,6 +323,8 @@
         background: #ffffff;
         color: #000000;
         box-shadow: 4px 4px 0 #000000;
+        height: 100%;
+        box-sizing: border-box;
     }
 
     input:focus {
@@ -292,6 +337,8 @@
     .play-button {
         position: absolute;
         right: 0.75rem;
+        top: 50%;
+        transform: translateY(-50%);
         background: #ff3e00;
         color: #ffffff;
         border: none;
@@ -309,12 +356,12 @@
     .play-button:hover {
         background: #ff3e00;
         color: #ffffff;
-        transform: translate(2px, 2px);
+        transform: translateY(-50%) translate(2px, 2px);
         box-shadow: 2px 2px 0 #000000;
     }
 
     .play-button:active {
-        transform: translate(4px, 4px);
+        transform: translateY(-50%) translate(4px, 4px);
         box-shadow: none;
     }
 
@@ -333,18 +380,19 @@
     }
 
     .waveform-container {
-        margin-top: 2rem;
-        padding: 1rem;
+        width: 100%;
+        height: 100%;
         background: #000000;
-        border: 2px solid #000000;
-        box-shadow: 4px 4px 0 #ff3e00;
+        box-shadow: 4px 4px 0 #000000;
+        box-sizing: border-box;
+        padding: 0.5rem;
     }
 
     .waveform {
         display: flex;
         align-items: flex-end;
         justify-content: space-between;
-        height: 60px;
+        height: 100%;
     }
 
     .waveform-bar {
@@ -407,5 +455,21 @@
     :global(body) {
         margin: 0;
         background: #ffffff;
+    }
+
+    .flip-in {
+        animation: flipIn 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        transform-origin: center;
+    }
+    
+    @keyframes flipIn {
+        0% {
+            transform: rotateX(90deg);
+            opacity: 0;
+        }
+        100% {
+            transform: rotateX(0deg);
+            opacity: 1;
+        }
     }
 </style>
