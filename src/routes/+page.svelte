@@ -81,7 +81,10 @@
 </script>
 
 <main class="container">
-    <div class="header-board">
+    <div class="header-container">
+        <svg class="header-shape" viewBox="0 0 300 100" preserveAspectRatio="none">
+            <path d="M10,10 L290,15 L270,85 L30,95 Z" fill="#ffff00" stroke="#000000" stroke-width="4"/>
+        </svg>
         <h1>Morse Code Decoder</h1>
     </div>
     
@@ -170,26 +173,36 @@
         z-index: -1;
     }
 
-    .header-board {
+    .header-container {
         position: relative;
         display: block;
         margin: 0 auto 2rem auto;
-        padding: 1rem;
-        background: #ffff00;
-        border: 4px solid #000000;
-        transform: rotate(-2deg);
-        transform-origin: center;
-        width: fit-content;
+        width: 600px;
+        height: 150px;
+    }
+
+    .header-shape {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
     }
 
     h1 {
+        position: relative;
         text-align: center;
         color: #000000;
         margin: 0;
         font-size: 2.5rem;
         text-transform: uppercase;
         letter-spacing: 2px;
-        padding-bottom: 0.5rem;
+        padding: 0;
+        z-index: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 100%;
     }
 
     .converter {
