@@ -2,9 +2,9 @@ import { describe, it, expect } from "vitest";
 // Change this import path to test different implementations:
 // import { morseToText } from "./morse1";
 // import { morseToText } from "./morse2";
-// import { morseToText } from "./morse3";
+import { morseToText } from "./morse3";
 // import { morseToText } from "./morse4";
-import { morseToText } from "./morse5";
+// import { morseToText } from "./morse5";
 
 // Morse code map for all letters
 const MORSE_MAP = {
