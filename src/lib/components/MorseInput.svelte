@@ -14,7 +14,7 @@
 
     function processAudio(e: AudioProcessingEvent) {
         const inputData = e.inputBuffer.getChannelData(0);
-        const samples = 40;
+        const samples = window.innerWidth <= 480 ? 20 : 60;  // More bars on desktop
         const blockSize = Math.floor(inputData.length / samples);
         
         waveformData = Array.from({ length: samples }, (_, i) => {
@@ -275,10 +275,16 @@
     }
 
     .waveform-bar {
-        width: 4px;
+        width: 6px;
         background: #ffffff;
-        margin: 0 1px;
+        margin: 0 2px;
         transition: height 0.02s linear;
+    }
+
+    @media (min-width: 481px) {
+        .waveform-bar {
+            margin: 0 2px;
+        }
     }
 
     .animated-input {

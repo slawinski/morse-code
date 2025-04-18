@@ -14,8 +14,9 @@
         position: relative;
         display: block;
         margin: 0 auto 2rem auto;
-        width: 600px;
-        height: 150px;
+        width: 90%;
+        max-width: 600px;
+        height: 120px;
     }
 
     .header-shape {
@@ -31,7 +32,7 @@
         text-align: center;
         color: #000000;
         margin: 0;
-        font-size: 2.5rem;
+        font-size: clamp(1.5rem, 5vw, 2.5rem);
         text-transform: uppercase;
         letter-spacing: 2px;
         padding: 0;
@@ -40,5 +41,11 @@
         align-items: center;
         justify-content: center;
         height: 100%;
+    }
+
+    @media (max-width: 480px) {
+        .header-container {
+            height: 100px;
+        }
     }
 </style> 
