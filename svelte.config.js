@@ -21,6 +21,16 @@ const config = {
     paths: {
       base: process.env.NODE_ENV === "production" ? "/morse-decoder" : "",
     },
+    prerender: {
+      handleHttpError: ({ path, referrer, message }) => {
+        // ignore missing links
+        if (message.includes("Not Found")) {
+          return;
+        }
+        // otherwise fail the build
+        throw new Error(message);
+      },
+    },
   },
 };
 
