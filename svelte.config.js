@@ -19,7 +19,7 @@ const config = {
       strict: true,
     }),
     paths: {
-      base: process.env.NODE_ENV === "production" ? "/morse-decoder" : "",
+      base: process.env.GITHUB_PAGES ? "/morse-decoder" : "",
     },
     prerender: {
       handleHttpError: ({ path, referrer, message }) => {
